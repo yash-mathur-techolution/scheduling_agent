@@ -23,6 +23,8 @@ from google.adk.tools.tool_context import ToolContext
 
 from drive_service.shared_libraries.atlassian_api_toolset_new import JiraApiToolset
 from drive_service.shared_libraries.constants.confluence_tool_filters import user_tools, content_access_tools, space_tools, template_tools, core_workflow_tools, knowledge_extraction_tools
+
+from drive_service.tools import bq_connector
 # from .prompts import GLOBAL_INSTRUCTION, INSTRUCTION
 
 # Environment configuration
@@ -85,6 +87,7 @@ def before_agent_callback(callback_context: CallbackContext):
                 print(f"\n{'*'*60}\nUPDATED ACCESS TOKEN STATE:\n{value}\n{'*'*60}\n")
                 jira_tool_set.configure_access_token_auth(value)
                 tools = jira_tool_set.get_tools()[:10]
+                tools.append(bq_connector.get_data_from_big_query)
                 callback_context._invocation_context.agent.tools = tools
                 print("REINITIALIZED TOOLS 2")
             # elif "openIdConnect" in key:
@@ -96,12 +99,16 @@ def before_agent_callback(callback_context: CallbackContext):
                 # callback_context._invocation_context.session.state["temp:jiraAuth"] = ACCESS_TOKEN
 
 # Build the agent with Jira tools
+
+tools = jira_tool_set.get_tools()[:10]  # Limit to first 10 tools for performance
+tools.append(bq_connector.get_data_from_big_query)  # Add BigQuery tool
+
 root_agent = Agent(
     model="gemini-2.0-flash-001",
-    global_instruction="You are a jira Agent",
-    instruction="You have access to tools for being a Jira Agent",
+    global_instruction="You are a Jira and Bigquery Agent",
+    # instruction="You have access to tools for being a Jira Agent",
     name="jira_agent",
-    tools=jira_tool_set.get_tools(),
+    tools=tools,
     before_agent_callback=before_agent_callback,
     after_agent_callback=after_agent_callback,
 )

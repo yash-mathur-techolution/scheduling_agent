@@ -43,6 +43,12 @@ vertexai.init(
     staging_bucket=STAGING_BUCKET,
 )
 
+# vertexai.init(
+#     project="coupa-agentspace-poc",
+#     location="us-central1",
+#     staging_bucket="gs://coupa-agentspace-staging",
+# )
+
 parser = argparse.ArgumentParser(description="Short sample app")
 
 parser.add_argument(
@@ -80,7 +86,7 @@ else:
     remote_app = agent_engines.create(
         app,
         requirements=[
-            AGENT_WHL_FILE, "deprecated"
+            AGENT_WHL_FILE, "deprecated"#, "psycopg2-binary==2.9.10", "vertexai==1.71.1"
         ],
         extra_packages=[AGENT_WHL_FILE],
         display_name=os.getenv("DEPLOYMENT_NAME") or "DEFAULT_AGENT_DEPLOYMENT",
